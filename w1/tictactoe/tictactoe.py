@@ -3,7 +3,6 @@
 import random
 
 
-
 X, O = 'X', 'O'
 HUMAN, COMP = 'human', 'comp'
 FIELD_SIZE = (3, 3)
@@ -24,15 +23,6 @@ MOVES = {
 
 def generate_field(rows: int=3, cols: int=3) -> str:
     field = ['_' for x in range(rows*cols)]
-    # # field[0] = X
-    # field[2] = X
-    # # field[3] = X
-    # field[4] = X
-    # # field[5] = O
-    # # field[5] = X
-    # field[6] = X
-    # # field[7] = O
-    # field[8] = X
     return field
 
 
@@ -49,17 +39,6 @@ def get_player() -> dict:
     }
 
 
-def game_start(player: str, mark: str):
-    if mark == X and player == 'human':
-        print('OMG!')
-        return 
-# def move_field(field: list, move: int, player: str) -> list:
-#     # new_field = field[:]
-#     field[MOVES[move]] = player
-    
-#     return field
-
-
 def player_move(field: list, mark: str) -> list:
     try:
         move = int(input('Enter the position of your move: '))
@@ -72,76 +51,107 @@ def player_move(field: list, mark: str) -> list:
             return player_move(field, mark)
         
         # Make move on the field
-        field[MOVES[move]] = mark
-        return field
+        move = MOVES[move]
+
+        if valid_move(field, move):
+            field[move] = mark
+            return field
+        else:
+            print('This position is occupied already')
+            return player_move(field, mark)
 
 
 def comp_move(field: list, mark: str) -> list:
     move = random.choice(list(MOVES.keys()))
-    print(move)
-    field[MOVES[move]] = mark
-    return field
+    move = MOVES[move]
+
+    if valid_move(field, move):
+        field[move] = mark
+        return field
+    else:
+        return comp_move(field, mark)
 
 
-def check_winner(field: list, cols: int=3) -> str:
+def valid_move(field: list, move: int) -> bool:
+    return field[move] == '_'
+
+
+def check_winner(field: list, player: str, cols: int=FIELD_SIZE[1]) -> str:
+    is_active = True
     for i, row in enumerate(range(0, len(field), cols)):
         # Check if X has won
         # By rows
         if field[row:row+cols].count(X) == cols:
-            print(f'{X} has won the game!')          
-
-        # By columns
-        if field[i::cols].count(X) == cols:
-            print(f'{X} has won the game by {i+1} column!')
-        
-        # By diagonal
-        if field[::cols+1].count(X) == cols:
-            print(f'{X} has won the game by diagonal!')
-
-        # By oposite diagonal. Could be buggy for larger grid ;(
-        if field[cols-1::cols-1][:-1].count(X) == cols:
-            print(f'{X} has won the game by oposite diagonal!')
-            break
+            print(f'{player} - {X} has won the game!')
+            is_active = False
 
         # Check if O has won
         # By rows
         if field[row:row+cols].count(O) == cols:
-            print(f'{O} has won the game!')
+            print(f'{player} - {O} has won the game!')
+            is_active = False
 
-        # By columns
-        if field[i::cols].count(O) == cols:
-            print(f'{O} has won the game by {i+1} column!')
-        
-        # By diagonal
-        if field[::cols+1].count(O) == cols:
-            print(f'{O} has won the game by diagonal!')
+    # Check if X has won
+    # By columns
+    if field[i::cols].count(X) == cols:
+        print(f'{player} - {X} has won the game by {i+1} column!')
+        is_active = False
+    
+    # By diagonal
+    if field[::cols+1].count(X) == cols:
+        print(f'{player} - {X} has won the game by diagonal!')
+        is_active = False
 
-        # By oposite diagonal. Could be buggy for larger grid ;(
-        if field[cols-1::cols-1][:-1].count(O) == cols:
-            print(f'{O} has won the game by oposite diagonal!')
-            break
+    # By oposite diagonal. Could be buggy for larger grid ;(
+    if field[cols-1::cols-1][:-1].count(X) == cols:
+        print(f'{player} - {X} has won the game by oposite diagonal!')
+        is_active = False
+
+    # Check if O has won
+    # By columns
+    if field[i::cols].count(O) == cols:
+        print(f'{player} - {O} has won the game by {i+1} column!')
+        is_active = False
+    
+    # By diagonal
+    if field[::cols+1].count(O) == cols:
+        print(f'{player} - {O} has won the game by diagonal!')
+        is_active = False
+
+    # By oposite diagonal. Could be buggy for larger grid ;(
+    if field[cols-1::cols-1][:-1].count(O) == cols:
+        print(f'{player} - {O} has won the game by oposite diagonal!')
+        is_active = False
+    
+    # Check for draw
+    if field.count('_') == 0:
+        print(f"Wow - it's a draw!")
+        is_active = False
+
+    return is_active
 
 
 def main():
+    player, mark = get_player()['player'], get_player()['mark']
     field = generate_field(rows=FIELD_SIZE[0], cols=FIELD_SIZE[1])
-    # check_winner(field)
+    print(f"Enter {' '.join([str(x) for x in MOVES.keys()])} to enter your mark on the field")
     
-    player = get_player()['player']
-    mark = get_player()['mark']
-    print(player, mark)
-
+    # Doing our first moves
     if mark == X and player == HUMAN:
         last_player = HUMAN
+        print(f"`{last_player}` is `{X}` so you start first\n")
         p_mark, c_mark = X, O
         draw_field(field)
         p_field = player_move(field, X)
     else:
         last_player = COMP
+        print(f"`{last_player}` is `{X}` so it starts first\n")
         p_mark, c_mark = O, X
         c_field = comp_move(field, X)
         draw_field(c_field)
 
-    while True:
+    # Iteraiting until we find a winner
+    while check_winner(field, last_player):
         if last_player == COMP:
             # human move
             p_field = player_move(c_field, p_mark)
