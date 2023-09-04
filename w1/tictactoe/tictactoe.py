@@ -73,6 +73,7 @@ def comp_move(field: list, mark: str) -> list:
 
 
 def valid_move(field: list, move: int) -> bool:
+    # Check if move would be placed on empty tile
     return field[move] == '_'
 
 
