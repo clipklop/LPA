@@ -1,10 +1,12 @@
 #
 
+from typing import Mapping
+from enum import Enum
 import random
 
 
 X, O = 'X', 'O'
-HUMAN, COMP = 'human', 'comp'
+HUMAN, COMP = 'Human', 'Computer'
 FIELD_SIZE = (3, 3)
 
 # Possible moves
@@ -21,9 +23,8 @@ MOVES = {
 }
 
 
-def generate_field(rows: int=3, cols: int=3) -> str:
-    field = ['_' for x in range(rows*cols)]
-    return field
+def generate_field(rows: int=3, cols: int=3) -> list[str]:
+    return ['_' for x in range(rows*cols)]
 
 
 def draw_field(field: list, cols: int=FIELD_SIZE[1]) -> None:
@@ -32,11 +33,12 @@ def draw_field(field: list, cols: int=FIELD_SIZE[1]) -> None:
     print('- ' * (len(field)-1))
 
 
-def get_player() -> dict:
-    return {
-        'player': random.choice((HUMAN, COMP)),
-        'mark': random.choice((X, O))
-    }
+def get_player() -> str:
+    return random.choice((HUMAN, COMP))
+
+
+def get_mark() -> str:
+    return random.choice((X, O))
 
 
 def player_move(field: list, mark: str) -> list:
@@ -133,21 +135,23 @@ def check_winner(field: list, player: str, cols: int=FIELD_SIZE[1]) -> str:
 
 
 def main():
-    player, mark = get_player()['player'], get_player()['mark']
+    player, mark = get_player(), get_mark()
     field = generate_field(rows=FIELD_SIZE[0], cols=FIELD_SIZE[1])
-    print(f"Enter {' '.join([str(x) for x in MOVES.keys()])} to enter your mark on the field")
+    
+    possible_moves = ' '.join([str(x) for x in MOVES.keys()])
+    print(f"Enter {possible_moves} to put your mark on the field")
     
     # Doing our first moves
     if mark == X and player == HUMAN:
         last_player = HUMAN
         print(f"`{last_player}` is `{X}` so you start first\n")
-        p_mark, c_mark = X, O
+        player_mark, computer_mark = X, O
         draw_field(field)
         p_field = player_move(field, X)
     else:
         last_player = COMP
         print(f"`{last_player}` is `{X}` so it starts first\n")
-        p_mark, c_mark = O, X
+        player_mark, computer_mark = O, X
         c_field = comp_move(field, X)
         draw_field(c_field)
 
@@ -155,12 +159,12 @@ def main():
     while check_winner(field, last_player):
         if last_player == COMP:
             # human move
-            p_field = player_move(c_field, p_mark)
+            p_field = player_move(c_field, player_mark)
             draw_field(p_field)
             last_player = HUMAN
         else:
             # comp move
-            c_field = comp_move(p_field, c_mark)
+            c_field = comp_move(p_field, computer_mark)
             draw_field(c_field)
             last_player = COMP
 

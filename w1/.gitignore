@@ -1,6 +1,5 @@
 
-w1/.pytest_cache
+.pytest_cache
+__pycache__
 
-w1/tests/__pycache__
-w1/tictactoe/__pycache__
-
+.DS_Store
