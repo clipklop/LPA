@@ -1,6 +1,7 @@
 
-w1/.pytest_cache
+.vscode/
 
-w1/tests/__pycache__
-w1/tictactoe/__pycache__
+.pytest_cache
+__pycache__
 
+.DS_Store
